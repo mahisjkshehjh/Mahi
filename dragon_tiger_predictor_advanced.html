@@ -1,0 +1,151 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dragon Tiger Predictor - Advanced Version</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #0ff;
+    }
+    .buttons button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      color: white;
+    }
+    .dragon { background-color: #e74c3c; }
+    .tiger { background-color: #3498db; }
+    .tie { background-color: #f1c40f; color: #000; }
+    .history {
+      margin-top: 20px;
+    }
+    .prediction {
+      margin-top: 30px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #0f0;
+    }
+    .stats {
+      margin-top: 20px;
+      font-size: 16px;
+    }
+    .reset {
+      margin-top: 30px;
+      padding: 10px 20px;
+      background-color: #2ecc71;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Dragon Tiger Predictor (Advanced Version)</h1>
+  <div class="buttons">
+    <button class="dragon" onclick="addResult('Dragon')">Dragon</button>
+    <button class="tiger" onclick="addResult('Tiger')">Tiger</button>
+    <button class="tie" onclick="addResult('Tie')">Tie</button>
+  </div>
+
+  <div class="history">
+    <h2>History</h2>
+    <div id="historyList"></div>
+  </div>
+
+  <div class="stats">
+    <p>Dragon Wins: <span id="dragonCount">0</span></p>
+    <p>Tiger Wins: <span id="tigerCount">0</span></p>
+    <p>Ties: <span id="tieCount">0</span></p>
+    <p>Prediction Confidence: <span id="predictionConfidence">--</span></p>
+  </div>
+
+  <div class="prediction">
+    Advanced Prediction: <span id="predictionText">--</span>
+  </div>
+
+  <button class="reset" onclick="resetHistory()">Reset History</button>
+
+  <script>
+    const history = [];
+    const counts = { Dragon: 0, Tiger: 0, Tie: 0 };
+
+    function addResult(result) {
+      history.push(result);
+      counts[result]++;
+      updateHistory();
+      updateStats();
+      predictNext();
+    }
+
+    function updateHistory() {
+      const list = history.map(r => `<span>${r}</span>`).join(' ➤ ');
+      document.getElementById("historyList").innerHTML = list;
+    }
+
+    function updateStats() {
+      document.getElementById("dragonCount").textContent = counts.Dragon;
+      document.getElementById("tigerCount").textContent = counts.Tiger;
+      document.getElementById("tieCount").textContent = counts.Tie;
+    }
+
+    function resetHistory() {
+      history.length = 0;
+      counts.Dragon = 0;
+      counts.Tiger = 0;
+      counts.Tie = 0;
+      updateHistory();
+      updateStats();
+      document.getElementById("predictionText").textContent = "--";
+      document.getElementById("predictionConfidence").textContent = "--";
+    }
+
+    function predictNext() {
+      if (history.length < 5) {
+        document.getElementById("predictionText").textContent = "Not enough data";
+        document.getElementById("predictionConfidence").textContent = "--";
+        return;
+      }
+
+      const last10 = history.slice(-10);
+      const trendCounts = { Dragon: 0, Tiger: 0, Tie: 0 };
+      last10.forEach(r => trendCounts[r]++);
+
+      let prediction = Object.keys(trendCounts).reduce((a, b) => trendCounts[a] > trendCounts[b] ? a : b);
+      const streak = getCurrentStreak();
+      let confidence = "Low";
+
+      // Adjust prediction logic based on streak
+      if (streak.count >= 3) {
+        prediction = streak.value;
+        confidence = "High"; // High confidence if there is a strong streak
+      } else if (Math.random() > 0.5) {
+        confidence = "Medium"; // Medium confidence if no streaks
+      }
+
+      document.getElementById("predictionText").textContent = prediction;
+      document.getElementById("predictionConfidence").textContent = confidence;
+    }
+
+    function getCurrentStreak() {
+      if (history.length === 0) return { value: null, count: 0 };
+      let lastValue = history[history.length - 1];
+      let count = 1;
+      for (let i = history.length - 2; i >= 0; i--) {
+        if (history[i] === lastValue) count++;
+        else break;
+      }
+      return { value: lastValue, count: count };
+    }
+  </script>
+</body>
+</html>
